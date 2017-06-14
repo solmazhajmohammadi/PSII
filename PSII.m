@@ -1,5 +1,5 @@
 
-function out= PSII(path_dark, path_light,outputfilename)
+function out= PSII(path_dark, path_light)
 
 % This script computes all characterisitc fluorescence features for
 % dark and light-adapted plants
@@ -50,10 +50,15 @@ for i=1:size(D,1)-1 % frame 101 is metadata
     FrameIndex(i)=str2num(D(i).name(end-7:end-4));
   end
 end
+s=D(Fbase_i).name;
+ix=strfind(s,'rawData');
+outputfilename=s(1:ix-2);
+fileID = fopen(fullfile(path_dark,D(Fbase_i).name));
 
 
 % Fbase = intensity of first frame (without red flash) as base line to subtract
 Fbase_i=find(FrameIndex==1);
+
 fileID = fopen(fullfile(path_dark,D(Fbase_i).name)); 
 F_base = fread(fileID,[1936,1216],'uint8');
 fclose(fileID);
@@ -220,36 +225,36 @@ Rfd= (Fm_dark./Fm_light-1).*Fmask_light;
 
 out(:,:,1)=Fm_dark;
 image_name = [outputfilename '_Fm_dark'];
-imwrite(Fm_dark,image_name,'jpg')
+imwrite(Fm_dark,image_name,'jpg');
 out(:,:,2)=Fv_dark;
 image_name = [outputfilename '_Fv_dark'];
-imwrite(Fv_dark,image_name,'jpg')
+imwrite(Fv_dark,image_name,'jpg');
 out(:,:,3)=FvFm_dark;
 image_name = [outputfilename '_FvFm_dark'];
-imwrite(FvFm_dark,image_name,'jpg')
+imwrite(FvFm_dark,image_name,'jpg');
 out(:,:,4)=Fm_light;
 image_name = [outputfilename '_Fm_light'];
-imwrite(Fm_light,image_name,'jpg')
+imwrite(Fm_light,image_name,'jpg');
 out(:,:,5)=Fv_light;
 image_name = [outputfilename '_Fv_dark'];
-imwrite(Fv_light,image_name,'jpg')
+imwrite(Fv_light,image_name,'jpg');
 out(:,:,6)=FvFm_light;
 image_name = [outputfilename '_FvFm_dark'];
-imwrite(FvFm_light,image_name,'jpg')
+imwrite(FvFm_light,image_name,'jpg');
 out(:,:,7)=Phi_PSII;
 image_name = [outputfilename '_Phi_PSII'];
-imwrite(Phi_PSII,image_name,'jpg')
+imwrite(Phi_PSII,image_name,'jpg');
 out(:,:,8)=NPQ;
 image_name = [outputfilename '_NPQ'];
-imwrite(NPQ,image_name,'jpg')
+imwrite(NPQ,image_name,'jpg');
 out(:,:,9)=qN;
 image_name = [outputfilename '_qN'];
-imwrite(qN,image_name,'jpg')
+imwrite(qN,image_name,'jpg');
 out(:,:,10)=qP;
 image_name = [outputfilename '_qP'];
-imwrite(qP,image_name,'jpg')
+imwrite(qP,image_name,'jpg');
 out(:,:,11)=Rfd;
 image_name = [outputfilename '_Rfd'];
-imwrite(Rfd,image_name,'jpg')
+imwrite(Rfd,image_name,'jpg');
 
 end
