@@ -28,8 +28,8 @@ function out= PSII(path_dark, path_light)
 % qP             -  1936-by-1216        double  Proportion of open PSII reaction centers
 % Rfd            -  1936-by-1216        double  ratio of chlorophyll decrease to steady state Chlorophyll
 
-pkg image load
-outputfilename=''
+pkg image load;
+outputfilename='';
 %path_dark='/home/solmaz/Desktop/ps2/'
 %path_light='/home/solmaz/Desktop/ps2/'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% load dark adapted PSII data %%%%%%%%%%%%%%%
