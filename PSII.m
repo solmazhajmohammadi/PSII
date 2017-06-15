@@ -29,18 +29,24 @@ function out= PSII(path_dark, path_light)
 % Rfd            -  1936-by-1216        double  ratio of chlorophyll decrease to steady state Chlorophyll
 
 pkg image load
-
-
-
+outputfilename=''
+%path_dark='/home/solmaz/Desktop/ps2/'
+%path_light='/home/solmaz/Desktop/ps2/'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% load dark adapted PSII data %%%%%%%%%%%%%%%
-
 D=dir(path_dark);
-% read all frames to compute mean intensity per frame
-for i=1:size(D,1)-1 % frame 101 is metadata
+[~,list_folders]=system(sprintf('find %s -type d -name "*.bin*"',path));
+%if ~isempty(list_folders)
 
+%end
+%[~,list_files]=system(sprintf('find %s -type f -name "*.bin"',path));
+
+
+% read all frames to compute mean intensity per frame
+
+for i=1:size(D,1)-1 % frame 101 is metadata
   if ~isempty(findstr(D(i).name,'bin'))
     % read frames
-    fileID = fopen(fullfile(path_dark,D(i).name)) ;
+    fileID = fopen(fullfile(path_dark,D(i).name)); 
     A = fread(fileID,[1936,1216],'uint8');
     A=double(A)./255;
     fclose(fileID);
@@ -48,17 +54,17 @@ for i=1:size(D,1)-1 % frame 101 is metadata
     M(i)=mean(mean(A));
     % FrameIndex from Filename
     FrameIndex(i)=str2num(D(i).name(end-7:end-4));
+
   end
 end
-s=D(Fbase_i).name;
-ix=strfind(s,'rawData');
-outputfilename=s(1:ix-2);
-fileID = fopen(fullfile(path_dark,D(Fbase_i).name));
 
+%if(exist('FrameIndex','var'))
+%else
+ % [~,list]=system(sprintf('find %s -type f -name "*.bin"',path));
+%end
 
 % Fbase = intensity of first frame (without red flash) as base line to subtract
 Fbase_i=find(FrameIndex==1);
-
 fileID = fopen(fullfile(path_dark,D(Fbase_i).name)); 
 F_base = fread(fileID,[1936,1216],'uint8');
 fclose(fileID);
@@ -112,6 +118,11 @@ FvFm_dark(isnan(FvFm_dark))=0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% load light adapted PSII data %%%%%%%%%%%%%%%
 clear  FrameIndex M
+
+%msgbox("select Filter with light adapted plants");
+%[PathName_light] = uigetdir;
+
+
 
 D=dir(path_light);
 % read all frames to compute mean intensity per frame
@@ -197,6 +208,8 @@ FvFm_light(FvFm_light<0)=0;
  
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 
 
