@@ -1,5 +1,5 @@
 
-function out= PSII(path_dark, path_light)
+function out= PSII(path_dark, path_light, outputfilename)
 
 % This script computes all characterisitc fluorescence features for
 % dark and light-adapted plants
@@ -28,65 +28,54 @@ function out= PSII(path_dark, path_light)
 % qP             -  1936-by-1216        double  Proportion of open PSII reaction centers
 % Rfd            -  1936-by-1216        double  ratio of chlorophyll decrease to steady state Chlorophyll
 
-pkg image load;
-outputfilename='';
-%path_dark='/home/solmaz/Desktop/ps2/'
-%path_light='/home/solmaz/Desktop/ps2/'
+pkg image load
+outputfilename=''
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% load dark adapted PSII data %%%%%%%%%%%%%%%
 D=dir(path_dark);
-[~,list_folders]=system(sprintf('find %s -type d -name "*.bin*"',path));
-%if ~isempty(list_folders)
-
-%end
+IsItFile=1;
+[~,list_folders]=system(sprintf('find %s -type d -name "*.bin*"',path_dark));
+if ~isempty(list_folders)
+   IsItFile=0;
+end
 %[~,list_files]=system(sprintf('find %s -type f -name "*.bin"',path));
-
+[~,list_folders]=system(sprintf('find %s -type d -name "*.bin*"',path_light));
+if ~isempty(list_folders)
+   IsItFile=0;
+end
 
 % read all frames to compute mean intensity per frame
 
 for i=1:size(D,1)-1 % frame 101 is metadata
-  if ~isempty(findstr(D(i).name,'bin'))
+  if ~isempty(findstr(D(i).name,'bin')) 
     % read frames
-    fileID = fopen(fullfile(path_dark,D(i).name)); 
-    A = fread(fileID,[1936,1216],'uint8');
+    A= Read_FileOrFolder(path_dark,i,IsItFile);
     A=double(A)./255;
-    fclose(fileID);
     % Mean intensity
     M(i)=mean(mean(A));
     % FrameIndex from Filename
     FrameIndex(i)=str2num(D(i).name(end-7:end-4));
-
   end
 end
 
-%if(exist('FrameIndex','var'))
-%else
- % [~,list]=system(sprintf('find %s -type f -name "*.bin"',path));
-%end
-
 % Fbase = intensity of first frame (without red flash) as base line to subtract
 Fbase_i=find(FrameIndex==1);
-fileID = fopen(fullfile(path_dark,D(Fbase_i).name)); 
-F_base = fread(fileID,[1936,1216],'uint8');
-fclose(fileID);
+F_base= Read_FileOrFolder(path_dark,Fbase_i,IsItFile);
 F_base = double(F_base)./255; % convert to double
 
 % chose frame for Fmax as second highest max value to avoid outlier
 [M_sort,SortID]=sort(M);
 Fm_i=SortID(end-1);
 
-fileID = fopen(fullfile(path_dark,D(Fm_i).name));  
-% Fm subtracted by F_base
-Fm_dark = fread(fileID,[1936,1216],'uint8');
-fclose(fileID);
+
+Fm_dark= Read_FileOrFolder(path_dark,Fm_i,IsItFile);
 Fm_dark = double(Fm_dark)./255-F_base; % convert to double
 
 Fm_dark_frame = FrameIndex(Fm_i);
 
 % F0
 F0_i=find(FrameIndex==2);
-fileID = fopen(fullfile(path_dark,D(F0_i).name));  
-F0_dark = fread(fileID,[1936,1216],'uint8');
-fclose(fileID);
+F0_dark= Read_FileOrFolder(path_dark,F0_i,IsItFile);
 F0_dark = double(F0_dark)./255-F_base; % convert to double
 
 % Compute mask from Fm Frame to exclude background
@@ -131,9 +120,7 @@ for i=1:size(D,1)-1 % frame 101 is metadata
   if ~isempty(findstr(D(i).name,'bin'))
     % read frames
 
-    fileID = fopen(fullfile(path_light,D(i).name));
-    A = fread(fileID,[1936,1216],'uint8');
-    fclose(fileID);
+    A = Read_FileOrFolder(path_light,i,IsItFile);
     A=double(A)./255;
     
     % Mean intensity
@@ -147,9 +134,7 @@ end
 
 % Fbase = intensity of first frame (without red flash) as base line to subtract
 Fbase_i=find(FrameIndex==1);
-fileID = fopen(fullfile(path_light,D(Fbase_i).name)); 
-F_base = fread(fileID,[1936,1216],'uint8');
-fclose(fileID);
+F_base = Read_FileOrFolder(path_light,Fbase_i,IsItFile);
 F_base = double(F_base)./255; % convert to double
 
 
@@ -158,19 +143,16 @@ F_base = double(F_base)./255; % convert to double
 [M_sort,SortID]=sort(M);
 Fm_i=SortID(end-1);
 
-fileID = fopen(fullfile(path_light,D(Fm_i).name)); 
 % Fm subtracted by F_base
-Fm_light = fread(fileID,[1936,1216],'uint8');
-fclose(fileID);
+
+Fm_light = Read_FileOrFolder(path_light,Fm_i,IsItFile);
 Fm_light = double(Fm_light)./255-F_base; % convert to double
 
 Fm_light_frame = FrameIndex(Fm_i);
 
 % F0
 F0_i=find(FrameIndex==2);
-fileID = fopen(fullfile(path_light,D(F0_i).name));  
-F0_light = fread(fileID,[1936,1216],'uint8');
-fclose(fileID);
+F0_light = Read_FileOrFolder(path_light,F0_i,IsItFile);
 F0_light_adapt = double(F0_light)./255-F_base; % convert to double
 
 % Computation of F0_light after Oxborough & Baker 1997: Photosynthesis research, 54: 135-142.
@@ -208,9 +190,6 @@ FvFm_light(FvFm_light<0)=0;
  
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
 
 
 
@@ -269,5 +248,36 @@ imwrite(qP,image_name,'jpg');
 out(:,:,11)=Rfd;
 image_name = [outputfilename '_Rfd'];
 imwrite(Rfd,image_name,'jpg');
+
+end
+
+
+
+
+function output= Read_FileOrFolder(path,index,IsItFile)
+
+output=0;
+
+  if IsItFile
+    D=dir(path);
+    fileID = fopen(fullfile(path,D(index).name));
+    A = fread(fileID,[1936,1216],'uint8');
+    fclose(fileID);
+    output=A;	
+  else
+    listefolders=dir(strcat(path,'*'));
+    for i = 1:length(listefolders) 
+      dirName = listefolders(i).name;
+      if findstr(dirName,num2str(index-1,'%-5.4d'))
+	files = dir( fullfile(path,dirName,'*.bin') );
+	files = {files.name};
+	fname = fullfile(path,dirName,files{1});
+        fileID = fopen(fname);
+        A = fread(fileID,[1936,1216],'uint8');
+        fclose(fileID);
+	output = A;
+      end
+    end
+  end
 
 end
