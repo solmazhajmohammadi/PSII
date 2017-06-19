@@ -1,5 +1,5 @@
 
-function out= PSII(path_dark, path_light, outputfilename)
+function PSII(path_dark, path_light, outputfilename)
 
 % This script computes all characterisitc fluorescence features for
 % dark and light-adapted plants
